@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
@@ -6,11 +7,10 @@ import 'dart:math';
 import 'provider.dart';
 import 'reward.dart';
 
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(SustainableLivingApp());
 }
-
 
 
 
@@ -102,63 +102,114 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.green,
         title: const Center(
-            child: Text("Greenify",
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w700))),
+          child: Text(
+            "Greenify",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.network(
-              'https://picsum.photos/300/200',
-              width: 200,
-              height: 200,
-              fit: BoxFit.contain,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Welcome to Sustainable Living!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  Position position = await getCurrentLocation();
-                  List<RecyclingCenter> centers =
-                      await getNearbyRecyclingCenters(position);
-                  Navigator.push(
+      body: Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildSectionContainer(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          NearbyRecyclingCentersPage(recyclingCenters: centers),
+                    'Eco-friendly Tips',
+                    'https://easyecotips.com/wp-content/uploads/2019/04/Logo-e1556655313417.jpgassets/eco_tips.jpg',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EcoTipsPage()),
                     ),
-                  );
-                } catch (error) {
-                  print(error);
-                }
-              },
-              child: Text('Find Recycling Centers Nearby'),
+                  ),
+                ),
+                Expanded(
+                  child: _buildSectionContainer(
+                    context,
+                    'Find Nearby Recycling Center',
+                    'assets/recycling_info_background.jpg',
+                    () async {
+                      try {
+                        Position position = await getCurrentLocation();
+                        List<RecyclingCenter> centers = await getNearbyRecyclingCenters(position);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NearbyRecyclingCentersPage(recyclingCenters: centers),
+                          ),
+                        );
+                      } catch (error) {
+                        print(error);
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
-            Consumer<PointsProvider>(
-              builder: (context, pointsProvider, _) {
-                return Text(
-                    'Total Reward Points: ${pointsProvider.totalRewardPoints}');
-              },
+          ),
+          Expanded(
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildSectionContainer(
+                    context,
+                    'Carbon Footprint Calculators',
+                    'https://ccsbestpractice.org.uk/wp-content/uploads/2023/04/carbon-footprint.png',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CarbonFootprintCalculatorPage()),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _buildSectionContainer(
+                    context,
+                    'Sustainable Product Recommendations',
+                    'assets/sustainable_products.jpg',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SustainableProductRecommendationsPage()),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RewardsPage()),
-                );
-              },
-              child: Text('View Rewards'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionContainer(BuildContext context, String title, String imageUrl, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Color.fromARGB(255, 78, 243, 84),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3),
             ),
           ],
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );
